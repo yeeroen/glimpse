@@ -72,12 +72,23 @@ export interface UrlValidationResult {
     error?: string;
 }
 
+const LOCALHOST_HOSTNAMES = ['localhost', '127.0.0.1', '0.0.0.0', '[::1]', '[::0]'];
+
+function isLocalhostUrl(hostname: string): boolean {
+    return LOCALHOST_HOSTNAMES.includes(hostname);
+}
+
 /**
  * Validates a URL for use with the screenshot API:
  * 1. Must be a valid URL with http: or https: protocol
  * 2. Hostname must not resolve to a private/reserved IP (SSRF protection)
+ *
+ * When the ALLOW_LOCALHOST env var is set to "true", localhost URLs are
+ * permitted (useful for local development).
  */
 export async function validateUrl(raw: string): Promise<UrlValidationResult> {
+    const allowLocalhost = process.env.ALLOW_LOCALHOST === 'true';
+
     let url: URL;
     try {
         url = new URL(raw);
@@ -90,6 +101,11 @@ export async function validateUrl(raw: string): Promise<UrlValidationResult> {
     }
 
     const hostname = url.hostname;
+
+    // Allow localhost URLs when explicitly enabled (dev mode)
+    if (allowLocalhost && isLocalhostUrl(hostname)) {
+        return { valid: true, url };
+    }
 
     // Block obvious localhost variants before DNS
     if (['localhost', '0.0.0.0', '[::1]', '[::0]'].includes(hostname)) {
@@ -121,6 +137,17 @@ export async function validateUrl(raw: string): Promise<UrlValidationResult> {
         }
 
         if (blocked) {
+            // In dev mode, allow IPs that resolve to loopback
+            if (allowLocalhost) {
+                try {
+                    const ipv4s = await resolve4(hostname);
+                    if (ipv4s.every((ip) => isBlockedIPv4(ip) && ipv4ToNumber(ip) >= 0x7f000000 && ipv4ToNumber(ip) <= 0x7fffffff)) {
+                        return { valid: true, url };
+                    }
+                } catch {
+                    // fall through to blocked
+                }
+            }
             return { valid: false, error: 'URL resolves to a blocked IP range' };
         }
     } catch {
