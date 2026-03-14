@@ -1,12 +1,15 @@
 import type { Page } from 'playwright';
+import sharp from 'sharp';
 import { getBrowser } from './browser';
+
+export type ImageFormat = 'png' | 'jpeg' | 'webp' | 'avif';
 
 export interface ScreenshotOptions {
     url: string;
     width?: number;
     height?: number;
     fullPage?: boolean;
-    format?: 'png' | 'jpeg' | 'webp';
+    format?: ImageFormat;
     quality?: number;
     waitFor?: number;
 }
@@ -22,11 +25,18 @@ export interface ScreenshotError {
     error: string;
 }
 
-const CONTENT_TYPES: Record<string, string> = {
+const CONTENT_TYPES: Record<ImageFormat, string> = {
     png: 'image/png',
     jpeg: 'image/jpeg',
     webp: 'image/webp',
+    avif: 'image/avif',
 };
+
+/** Formats that Playwright supports natively via `type`. */
+const NATIVE_FORMATS = new Set<ImageFormat>(['png', 'jpeg']);
+
+/** Formats that require post-processing with sharp. */
+const SHARP_FORMATS = new Set<ImageFormat>(['webp', 'avif']);
 
 /**
  * Navigate to a URL and capture a screenshot. Returns the image
@@ -66,33 +76,41 @@ export async function takeScreenshot(
             await page.waitForTimeout(waitFor);
         }
 
-        // Playwright's screenshot `type` supports 'png' and 'jpeg'.
-        // For 'webp' there is no native type — we omit `type` and
-        // provide a path hint so Playwright infers the format from
-        // the extension. Since we're capturing to a Buffer (no real
-        // file), we pass a virtual path purely for format inference.
+        // Playwright natively supports 'png' and 'jpeg'. For 'webp'
+        // and 'avif' we capture as PNG and convert with sharp.
+        const needsConversion = SHARP_FORMATS.has(format);
+        const captureType: 'png' | 'jpeg' = needsConversion ? 'png' : format as 'png' | 'jpeg';
+
         const screenshotConfig: NonNullable<Parameters<Page['screenshot']>[0]> = {
             fullPage,
+            type: captureType,
         };
 
-        if (format === 'webp') {
-            // Virtual path — Playwright uses the extension to pick the encoder.
-            // The file is never actually written because we capture to buffer.
-            screenshotConfig.path = 'screenshot.webp';
-        } else {
-            screenshotConfig.type = format;
-        }
-
-        if ((format === 'jpeg' || format === 'webp') && quality !== undefined) {
+        // Set quality for native JPEG captures
+        if (captureType === 'jpeg' && quality !== undefined) {
             screenshotConfig.quality = Math.max(0, Math.min(100, quality));
         }
 
-        const buffer = await page.screenshot(screenshotConfig);
+        let buffer = Buffer.from(await page.screenshot(screenshotConfig));
+
+        // Convert to webp/avif via sharp
+        if (needsConversion) {
+            const clampedQuality = quality !== undefined ? Math.max(0, Math.min(100, quality)) : 80;
+            let pipeline = sharp(buffer);
+
+            if (format === 'webp') {
+                pipeline = pipeline.webp({ quality: clampedQuality });
+            } else {
+                pipeline = pipeline.avif({ quality: clampedQuality });
+            }
+
+            buffer = Buffer.from(await pipeline.toBuffer());
+        }
 
         return {
             success: true,
-            buffer: Buffer.from(buffer),
-            contentType: CONTENT_TYPES[format] || 'image/png',
+            buffer,
+            contentType: CONTENT_TYPES[format],
         };
     } catch (error) {
         return {

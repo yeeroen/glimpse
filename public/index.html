@@ -187,10 +187,11 @@
                             <option value="png">PNG</option>
                             <option value="jpeg">JPEG</option>
                             <option value="webp">WebP</option>
+                            <option value="avif">AVIF</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="quality">Quality (JPEG/WebP)</label>
+                        <label for="quality">Quality (JPEG/WebP/AVIF)</label>
                         <input
                             type="number"
                             id="quality"
@@ -246,8 +247,8 @@
   "width": 1280,                     // optional (100-3840, default: 1280)
   "height": 720,                     // optional (100-2160, default: 720)
   "fullPage": true,                  // optional (default: true)
-  "format": "png",                   // optional: png, jpeg, webp
-  "quality": 80,                     // optional: 1-100 (jpeg/webp only)
+  "format": "png",                   // optional: png, jpeg, webp, avif
+  "quality": 80,                     // optional: 1-100 (jpeg/webp/avif only)
   "waitFor": 0                       // optional: 0-30000 ms
 }</pre>
 

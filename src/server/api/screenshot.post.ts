@@ -1,5 +1,5 @@
 import { defineHandler, HTTPError } from 'nitro';
-import { takeScreenshot, type ScreenshotOptions } from '../../utils/screenshot';
+import { takeScreenshot, type ScreenshotOptions, type ImageFormat } from '../../utils/screenshot';
 import { validateUrl } from '../../utils/url-validator';
 import { Semaphore } from '../../utils/semaphore';
 
@@ -8,12 +8,12 @@ interface RequestBody {
     width?: number | string;
     height?: number | string;
     fullPage?: boolean | string;
-    format?: 'png' | 'jpeg' | 'webp';
+    format?: ImageFormat;
     quality?: number | string;
     waitFor?: number | string;
 }
 
-const VALID_FORMATS = new Set(['png', 'jpeg', 'webp']);
+const VALID_FORMATS = new Set<ImageFormat>(['png', 'jpeg', 'webp', 'avif']);
 
 const MAX_CONCURRENT = parseInt(process.env.MAX_CONCURRENT || '4', 10);
 const MAX_QUEUE = parseInt(process.env.MAX_QUEUE || '16', 10);
@@ -43,7 +43,7 @@ export default defineHandler(async (event) => {
     }
 
     // --- Parse and clamp options ---
-    const format = VALID_FORMATS.has(body.format || '') ? (body.format as 'png' | 'jpeg' | 'webp') : 'png';
+    const format: ImageFormat = body.format && VALID_FORMATS.has(body.format) ? body.format : 'png';
 
     const options: ScreenshotOptions = {
         url: urlCheck.url!.toString(),

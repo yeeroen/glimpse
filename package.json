@@ -21,6 +21,7 @@
     "dependencies": {
         "nitro": "^3.0.260311-beta",
         "playwright": "^1.58.2",
+        "sharp": "^0.34.5",
         "vite": "npm:@voidzero-dev/vite-plus-core@0.1.11"
     },
     "devDependencies": {
