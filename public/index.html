@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Glimpse</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 40px 20px;
+                background: #f5f5f5;
+            }
+            h1 {
+                color: #333;
+                margin-bottom: 10px;
+            }
+            .subtitle {
+                color: #666;
+                margin-bottom: 30px;
+            }
+            .card {
+                background: white;
+                border-radius: 8px;
+                padding: 24px;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            .form-group {
+                margin-bottom: 16px;
+            }
+            label {
+                display: block;
+                margin-bottom: 6px;
+                font-weight: 500;
+                color: #333;
+            }
+            input,
+            select {
+                width: 100%;
+                padding: 10px 12px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-size: 14px;
+            }
+            input:focus,
+            select:focus {
+                outline: none;
+                border-color: #007bff;
+            }
+            .row {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+            }
+            button {
+                background: #007bff;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 4px;
+                font-size: 16px;
+                cursor: pointer;
+                width: 100%;
+            }
+            button:hover {
+                background: #0056b3;
+            }
+            button:disabled {
+                background: #ccc;
+                cursor: not-allowed;
+            }
+            .result {
+                margin-top: 20px;
+                padding: 16px;
+                border-radius: 4px;
+                display: none;
+            }
+            .result.success {
+                display: block;
+                background: #d4edda;
+                border: 1px solid #c3e6cb;
+                color: #155724;
+            }
+            .result.error {
+                display: block;
+                background: #f8d7da;
+                border: 1px solid #f5c6cb;
+                color: #721c24;
+            }
+            .screenshot-preview {
+                margin-top: 16px;
+                max-width: 100%;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+            }
+            code {
+                background: #f4f4f4;
+                padding: 2px 6px;
+                border-radius: 3px;
+                font-family: 'Monaco', 'Menlo', monospace;
+                font-size: 14px;
+            }
+            .api-docs {
+                margin-top: 20px;
+            }
+            .api-docs h3 {
+                margin-bottom: 12px;
+            }
+            .api-docs pre {
+                background: #f4f4f4;
+                padding: 16px;
+                border-radius: 4px;
+                overflow-x: auto;
+            }
+            .hint {
+                font-size: 12px;
+                color: #888;
+                margin-top: 4px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Glimpse</h1>
+        <p class="subtitle">Lightweight screenshot API</p>
+
+        <div class="card">
+            <h2>Take a Screenshot</h2>
+            <form id="screenshotForm">
+                <div class="form-group">
+                    <label for="apiKey">API Key</label>
+                    <input
+                        type="password"
+                        id="apiKey"
+                        name="apiKey"
+                        placeholder="Leave empty if auth is disabled"
+                    />
+                    <p class="hint">Stored in your browser's localStorage</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="url">URL *</label>
+                    <input
+                        type="url"
+                        id="url"
+                        name="url"
+                        placeholder="https://example.com"
+                        required
+                    />
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="width">Width (px)</label>
+                        <input
+                            type="number"
+                            id="width"
+                            name="width"
+                            value="1280"
+                            min="100"
+                            max="3840"
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="height">Height (px)</label>
+                        <input
+                            type="number"
+                            id="height"
+                            name="height"
+                            value="720"
+                            min="100"
+                            max="2160"
+                        />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="format">Format</label>
+                        <select id="format" name="format">
+                            <option value="png">PNG</option>
+                            <option value="jpeg">JPEG</option>
+                            <option value="webp">WebP</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="quality">Quality (JPEG/WebP)</label>
+                        <input
+                            type="number"
+                            id="quality"
+                            name="quality"
+                            value="80"
+                            min="1"
+                            max="100"
+                        />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label for="fullPage">Full Page</label>
+                        <select id="fullPage" name="fullPage">
+                            <option value="true">Yes</option>
+                            <option value="false">No (viewport only)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="waitFor">Wait Time (ms)</label>
+                        <input
+                            type="number"
+                            id="waitFor"
+                            name="waitFor"
+                            value="0"
+                            min="0"
+                            max="30000"
+                        />
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn">Take Screenshot</button>
+            </form>
+
+            <div id="result" class="result"></div>
+        </div>
+
+        <div class="card api-docs">
+            <h2>API Documentation</h2>
+
+            <h3>Endpoint</h3>
+            <p><code>POST /api/screenshot</code></p>
+
+            <h3>Authentication</h3>
+            <p>If <code>SCREENSHOT_API_KEY</code> is configured, include the header:<br>
+            <code>X-API-Key: your-key</code></p>
+
+            <h3>Request Body</h3>
+            <pre>
+{
+  "url": "https://example.com",      // required
+  "width": 1280,                     // optional (100-3840, default: 1280)
+  "height": 720,                     // optional (100-2160, default: 720)
+  "fullPage": true,                  // optional (default: true)
+  "format": "png",                   // optional: png, jpeg, webp
+  "quality": 80,                     // optional: 1-100 (jpeg/webp only)
+  "waitFor": 0                       // optional: 0-30000 ms
+}</pre>
+
+            <h3>Response</h3>
+            <p>By default, the raw image is returned with the appropriate <code>Content-Type</code> header.</p>
+            <p>To receive JSON with a base64-encoded image, send <code>Accept: application/json</code>:</p>
+            <pre>
+{
+  "success": true,
+  "contentType": "image/png",
+  "size": 123456,
+  "base64": "iVBORw0KGgo..."
+}</pre>
+
+            <h3>Errors</h3>
+            <pre>
+// 400 — Bad request (invalid URL, blocked URL, missing fields)
+// 401 — Unauthorized (missing or invalid API key)
+// 502 — Screenshot capture failed
+// 503 — Server at capacity, try again later</pre>
+        </div>
+
+        <script>
+            // Persist API key in localStorage
+            const apiKeyInput = document.getElementById('apiKey');
+            apiKeyInput.value = localStorage.getItem('screenshot-api-key') || '';
+            apiKeyInput.addEventListener('input', () => {
+                localStorage.setItem('screenshot-api-key', apiKeyInput.value);
+            });
+
+            document.getElementById('screenshotForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const submitBtn = document.getElementById('submitBtn');
+                const result = document.getElementById('result');
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Taking screenshot...';
+                result.className = 'result';
+                result.innerHTML = '';
+
+                const formData = new FormData(e.target);
+                const body = {
+                    url: formData.get('url'),
+                    width: parseInt(formData.get('width')),
+                    height: parseInt(formData.get('height')),
+                    format: formData.get('format'),
+                    quality: parseInt(formData.get('quality')),
+                    fullPage: formData.get('fullPage') === 'true',
+                    waitFor: parseInt(formData.get('waitFor')),
+                };
+
+                const headers = { 'Content-Type': 'application/json' };
+                const apiKey = apiKeyInput.value.trim();
+                if (apiKey) {
+                    headers['X-API-Key'] = apiKey;
+                }
+
+                try {
+                    const response = await fetch('/api/screenshot', {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify(body),
+                    });
+
+                    if (!response.ok) {
+                        const text = await response.text();
+                        let message;
+                        try {
+                            const json = JSON.parse(text);
+                            message = json.statusMessage || json.message || json.error || response.statusText;
+                        } catch {
+                            message = text || response.statusText;
+                        }
+                        throw new Error(`${response.status}: ${message}`);
+                    }
+
+                    const contentType = response.headers.get('content-type') || '';
+
+                    if (contentType.startsWith('image/')) {
+                        const blob = await response.blob();
+                        const url = URL.createObjectURL(blob);
+                        const size = blob.size;
+
+                        result.className = 'result success';
+                        result.innerHTML = `
+                            <strong>Success!</strong><br>
+                            Size: ${(size / 1024).toFixed(2)} KB<br>
+                            Format: ${contentType}<br>
+                            <img src="${url}" alt="Screenshot" class="screenshot-preview" />
+                        `;
+                    } else {
+                        // JSON response (shouldn't normally happen from the UI
+                        // since we don't set Accept: application/json)
+                        const data = await response.json();
+                        result.className = 'result success';
+                        result.innerHTML = `
+                            <strong>Success!</strong><br>
+                            Size: ${(data.size / 1024).toFixed(2)} KB<br>
+                            Format: ${data.contentType}<br>
+                            <img src="data:${data.contentType};base64,${data.base64}" alt="Screenshot" class="screenshot-preview" />
+                        `;
+                    }
+                } catch (error) {
+                    result.className = 'result error';
+                    result.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Take Screenshot';
+                }
+            });
+        </script>
+    </body>
+</html>

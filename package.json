@@ -1,0 +1,36 @@
+{
+    "name": "glimpse",
+    "version": "1.0.0",
+    "description": "Screenshot API powered by Nitro 3, Vite, and Playwright",
+    "keywords": [
+        "api",
+        "nitro",
+        "playwright",
+        "screenshot"
+    ],
+    "license": "ISC",
+    "author": "",
+    "type": "module",
+    "scripts": {
+        "dev": "vp dev",
+        "build": "vp build",
+        "preview": "vp preview",
+        "postinstall": "playwright install chromium",
+        "prepare": "vp config"
+    },
+    "dependencies": {
+        "nitro": "^3.0.260311-beta",
+        "playwright": "^1.58.2",
+        "vite": "npm:@voidzero-dev/vite-plus-core@0.1.11"
+    },
+    "devDependencies": {
+        "@types/node": "^25.5.0",
+        "typescript": "^5.9.3",
+        "vite-plus": "0.1.11"
+    },
+    "overrides": {
+        "vite": "npm:@voidzero-dev/vite-plus-core@0.1.11",
+        "vitest": "npm:@voidzero-dev/vite-plus-test@0.1.11"
+    },
+    "packageManager": "npm@11.11.1"
+}
