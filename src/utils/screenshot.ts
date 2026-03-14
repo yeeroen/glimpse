@@ -60,8 +60,12 @@ export async function takeScreenshot(
     } = options;
 
     const browser = await getBrowser();
+    // Use a minimal viewport height when capturing the full page so
+    // the output image matches the actual content height — short
+    // pages won't be stretched to fill an arbitrary viewport.
+    const viewportHeight = fullPage ? 1 : height;
     const context = await browser.newContext({
-        viewport: { width, height },
+        viewport: { width, height: viewportHeight },
     });
 
     try {
