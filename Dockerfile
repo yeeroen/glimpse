@@ -26,7 +26,7 @@ WORKDIR /app
 
 # Install dependencies
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --ignore-scripts && npx playwright install chromium
 
 # Copy source and build
 COPY . .
