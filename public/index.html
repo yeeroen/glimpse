@@ -307,6 +307,8 @@
                     headers['X-API-Key'] = apiKey;
                 }
 
+                const startTime = performance.now();
+
                 try {
                     const response = await fetch('/api/screenshot', {
                         method: 'POST',
@@ -326,6 +328,7 @@
                         throw new Error(`${response.status}: ${message}`);
                     }
 
+                    const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
                     const contentType = response.headers.get('content-type') || '';
 
                     if (contentType.startsWith('image/')) {
@@ -335,7 +338,7 @@
 
                         result.className = 'result success';
                         result.innerHTML = `
-                            <strong>Success!</strong><br>
+                            <strong>Success!</strong> (${elapsed}s)<br>
                             Size: ${(size / 1024).toFixed(2)} KB<br>
                             Format: ${contentType}<br>
                             <img src="${url}" alt="Screenshot" class="screenshot-preview" />
@@ -346,7 +349,7 @@
                         const data = await response.json();
                         result.className = 'result success';
                         result.innerHTML = `
-                            <strong>Success!</strong><br>
+                            <strong>Success!</strong> (${elapsed}s)<br>
                             Size: ${(data.size / 1024).toFixed(2)} KB<br>
                             Format: ${data.contentType}<br>
                             <img src="data:${data.contentType};base64,${data.base64}" alt="Screenshot" class="screenshot-preview" />
