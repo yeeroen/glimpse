@@ -32,9 +32,6 @@ const CONTENT_TYPES: Record<ImageFormat, string> = {
     avif: 'image/avif',
 };
 
-/** Formats that Playwright supports natively via `type`. */
-const NATIVE_FORMATS = new Set<ImageFormat>(['png', 'jpeg']);
-
 /** Formats that require post-processing with sharp. */
 const SHARP_FORMATS = new Set<ImageFormat>(['webp', 'avif']);
 
@@ -83,7 +80,7 @@ export async function takeScreenshot(
         // Playwright natively supports 'png' and 'jpeg'. For 'webp'
         // and 'avif' we capture as PNG and convert with sharp.
         const needsConversion = SHARP_FORMATS.has(format);
-        const captureType: 'png' | 'jpeg' = needsConversion ? 'png' : format as 'png' | 'jpeg';
+        const captureType: 'png' | 'jpeg' = needsConversion ? 'png' : (format as 'png' | 'jpeg');
 
         const screenshotConfig: NonNullable<Parameters<Page['screenshot']>[0]> = {
             fullPage,

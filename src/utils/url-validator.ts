@@ -40,11 +40,11 @@ const BLOCKED_IPV4_RANGES: Array<{ network: number; mask: number }> = [
  * starts with any of these.
  */
 const BLOCKED_IPV6_PREFIXES = [
-    '::',       // unspecified + loopback (::1)
-    'fc',       // unique local (fc00::/7)
-    'fd',       // unique local (fc00::/7)
-    'fe80',     // link-local
-    'ff',       // multicast
+    '::', // unspecified + loopback (::1)
+    'fc', // unique local (fc00::/7)
+    'fd', // unique local (fc00::/7)
+    'fe80', // link-local
+    'ff', // multicast
 ];
 
 function ipv4ToNumber(ip: string): number {
@@ -141,7 +141,14 @@ export async function validateUrl(raw: string): Promise<UrlValidationResult> {
             if (allowLocalhost) {
                 try {
                     const ipv4s = await resolve4(hostname);
-                    if (ipv4s.every((ip) => isBlockedIPv4(ip) && ipv4ToNumber(ip) >= 0x7f000000 && ipv4ToNumber(ip) <= 0x7fffffff)) {
+                    if (
+                        ipv4s.every(
+                            (ip) =>
+                                isBlockedIPv4(ip) &&
+                                ipv4ToNumber(ip) >= 0x7f000000 &&
+                                ipv4ToNumber(ip) <= 0x7fffffff,
+                        )
+                    ) {
                         return { valid: true, url };
                     }
                 } catch {

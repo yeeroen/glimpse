@@ -237,8 +237,10 @@
             <p><code>POST /api/screenshot</code></p>
 
             <h3>Authentication</h3>
-            <p>If <code>SCREENSHOT_API_KEY</code> is configured, include the header:<br>
-            <code>X-API-Key: your-key</code></p>
+            <p>
+                If <code>SCREENSHOT_API_KEY</code> is configured, include the header:<br />
+                <code>X-API-Key: your-key</code>
+            </p>
 
             <h3>Request Body</h3>
             <pre>
@@ -253,8 +255,14 @@
 }</pre>
 
             <h3>Response</h3>
-            <p>By default, the raw image is returned with the appropriate <code>Content-Type</code> header.</p>
-            <p>To receive JSON with a base64-encoded image, send <code>Accept: application/json</code>:</p>
+            <p>
+                By default, the raw image is returned with the appropriate
+                <code>Content-Type</code> header.
+            </p>
+            <p>
+                To receive JSON with a base64-encoded image, send
+                <code>Accept: application/json</code>:
+            </p>
             <pre>
 {
   "success": true,
@@ -321,7 +329,11 @@
                         let message;
                         try {
                             const json = JSON.parse(text);
-                            message = json.statusMessage || json.message || json.error || response.statusText;
+                            message =
+                                json.statusMessage ||
+                                json.message ||
+                                json.error ||
+                                response.statusText;
                         } catch {
                             message = text || response.statusText;
                         }
