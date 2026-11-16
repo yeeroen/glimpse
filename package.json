@@ -25,13 +25,16 @@
         "vite": "npm:@voidzero-dev/vite-plus-core@0.1.11"
     },
     "devDependencies": {
-        "@types/node": "^25.5.0",
+        "@types/node": "^24.19.2",
         "typescript": "^5.9.3",
         "vite-plus": "0.1.11"
     },
     "overrides": {
         "vite": "npm:@voidzero-dev/vite-plus-core@0.1.11",
         "vitest": "npm:@voidzero-dev/vite-plus-test@0.1.11"
+    },
+    "engines": {
+        "node": ">=22.22.0"
     },
     "packageManager": "npm@11.11.1"
 }

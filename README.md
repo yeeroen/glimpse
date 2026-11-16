@@ -4,7 +4,7 @@ A lightweight, self-hosted screenshot API. Send it a URL, get back an image. Bui
 
 ## Getting started
 
-You'll need Node.js 20+.
+You'll need Node.js 22.22+ (24 recommended).
 
 ```bash
 npm install
@@ -19,13 +19,13 @@ Open `http://localhost:3000` for the web UI, or hit the API directly.
 
 ```json
 {
-  "url": "https://github.com",
-  "width": 1280,
-  "height": 720,
-  "fullPage": true,
-  "format": "png",
-  "quality": 80,
-  "waitFor": 0
+    "url": "https://github.com",
+    "width": 1280,
+    "height": 720,
+    "fullPage": true,
+    "format": "png",
+    "quality": 80,
+    "waitFor": 0
 }
 ```
 
@@ -49,24 +49,24 @@ curl -X POST http://localhost:3000/api/screenshot \
 
 ### Options
 
-| Field | Type | Default | Description |
-|---|---|---|---|
-| `url` | string | — | URL to screenshot (required) |
-| `width` | number | 1280 | Viewport width (100-3840) |
-| `height` | number | 720 | Viewport height (100-2160) |
-| `fullPage` | boolean | true | Capture the full scrollable page |
-| `format` | string | png | `png`, `jpeg`, or `webp` |
-| `quality` | number | — | 1-100, for jpeg/webp only |
-| `waitFor` | number | 0 | Extra wait time in ms (0-30000) |
+| Field      | Type    | Default | Description                      |
+| ---------- | ------- | ------- | -------------------------------- |
+| `url`      | string  | —       | URL to screenshot (required)     |
+| `width`    | number  | 1280    | Viewport width (100-3840)        |
+| `height`   | number  | 720     | Viewport height (100-2160)       |
+| `fullPage` | boolean | true    | Capture the full scrollable page |
+| `format`   | string  | png     | `png`, `jpeg`, or `webp`         |
+| `quality`  | number  | —       | 1-100, for jpeg/webp only        |
+| `waitFor`  | number  | 0       | Extra wait time in ms (0-30000)  |
 
 ### Error codes
 
-| Status | Meaning |
-|---|---|
-| 400 | Bad request — invalid URL, missing fields, or blocked by SSRF protection |
-| 401 | Invalid or missing API key |
-| 502 | Screenshot failed (page didn't load, timed out, etc.) |
-| 503 | Server at capacity — too many concurrent requests, try again later |
+| Status | Meaning                                                                  |
+| ------ | ------------------------------------------------------------------------ |
+| 400    | Bad request — invalid URL, missing fields, or blocked by SSRF protection |
+| 401    | Invalid or missing API key                                               |
+| 502    | Screenshot failed (page didn't load, timed out, etc.)                    |
+| 503    | Server at capacity — too many concurrent requests, try again later       |
 
 ## Configuration
 
@@ -104,11 +104,11 @@ curl -X POST http://localhost:3000/api/screenshot \
 
 ## Scripts
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Start dev server with hot reload |
-| `npm run build` | Build for production |
-| `npm run preview` | Preview the production build |
+| Command           | Description                      |
+| ----------------- | -------------------------------- |
+| `npm run dev`     | Start dev server with hot reload |
+| `npm run build`   | Build for production             |
+| `npm run preview` | Preview the production build     |
 
 ## License
 
