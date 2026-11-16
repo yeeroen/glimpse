@@ -1,4 +1,5 @@
-import { resolve4, resolve6 } from 'dns/promises';
+import type { LookupAddress } from 'dns';
+import { lookup } from 'dns/promises';
 
 /**
  * Private and reserved IPv4 ranges that should be blocked
@@ -43,7 +44,10 @@ const BLOCKED_IPV6_PREFIXES = [
     '::', // unspecified + loopback (::1)
     'fc', // unique local (fc00::/7)
     'fd', // unique local (fc00::/7)
-    'fe80', // link-local
+    'fe8', // link-local (fe80::/10)
+    'fe9',
+    'fea',
+    'feb',
     'ff', // multicast
 ];
 
@@ -64,6 +68,14 @@ function isBlockedIPv4(ip: string): boolean {
 function isBlockedIPv6(ip: string): boolean {
     const normalized = ip.toLowerCase();
     return BLOCKED_IPV6_PREFIXES.some((prefix) => normalized.startsWith(prefix));
+}
+
+function isBlockedAddress({ address, family }: LookupAddress): boolean {
+    return family === 4 ? isBlockedIPv4(address) : isBlockedIPv6(address);
+}
+
+function isLoopbackAddress({ address, family }: LookupAddress): boolean {
+    return family === 4 ? address.startsWith('127.') : address === '::1';
 }
 
 export interface UrlValidationResult {
@@ -112,53 +124,26 @@ export async function validateUrl(raw: string): Promise<UrlValidationResult> {
         return { valid: false, error: 'URLs pointing to localhost are not allowed' };
     }
 
-    // Resolve hostname and check all returned IPs
+    // Resolve with the system resolver (the same one Chromium uses) and
+    // check every returned IP. IP literals come back unchanged, so they
+    // go through the same checks. IPv6 hostnames are bracketed in URLs.
+    let addresses: LookupAddress[];
     try {
-        let blocked = false;
-
-        try {
-            const ipv4s = await resolve4(hostname);
-            if (ipv4s.some(isBlockedIPv4)) {
-                blocked = true;
-            }
-        } catch {
-            // No A records — that's fine, check AAAA
-        }
-
-        if (!blocked) {
-            try {
-                const ipv6s = await resolve6(hostname);
-                if (ipv6s.some(isBlockedIPv6)) {
-                    blocked = true;
-                }
-            } catch {
-                // No AAAA records — that's fine
-            }
-        }
-
-        if (blocked) {
-            // In dev mode, allow IPs that resolve to loopback
-            if (allowLocalhost) {
-                try {
-                    const ipv4s = await resolve4(hostname);
-                    if (
-                        ipv4s.every(
-                            (ip) =>
-                                isBlockedIPv4(ip) &&
-                                ipv4ToNumber(ip) >= 0x7f000000 &&
-                                ipv4ToNumber(ip) <= 0x7fffffff,
-                        )
-                    ) {
-                        return { valid: true, url };
-                    }
-                } catch {
-                    // fall through to blocked
-                }
-            }
-            return { valid: false, error: 'URL resolves to a blocked IP range' };
-        }
+        addresses = await lookup(hostname.replace(/^\[(.*)\]$/, '$1'), { all: true });
     } catch {
         return { valid: false, error: 'Could not resolve hostname' };
+    }
+
+    if (addresses.length === 0) {
+        return { valid: false, error: 'Could not resolve hostname' };
+    }
+
+    if (addresses.some(isBlockedAddress)) {
+        // In dev mode, allow hostnames that resolve only to loopback
+        if (allowLocalhost && addresses.every(isLoopbackAddress)) {
+            return { valid: true, url };
+        }
+        return { valid: false, error: 'URL resolves to a blocked IP range' };
     }
 
     return { valid: true, url };
