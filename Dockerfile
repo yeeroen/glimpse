@@ -1,32 +1,17 @@
 FROM node:24-slim
 
-# Install system dependencies required by Playwright Chromium
+# Fonts for emoji and common web text (not pulled in by Playwright)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libnss3 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libcups2 \
-    libdrm2 \
-    libxkbcommon0 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxfixes3 \
-    libxrandr2 \
-    libgbm1 \
-    libpango-1.0-0 \
-    libcairo2 \
-    libasound2 \
-    libatspi2.0-0 \
-    libwayland-client0 \
     fonts-noto-color-emoji \
     fonts-freefont-ttf \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Install dependencies
+# Install dependencies, then Chromium plus the system libraries it needs
+# for this Playwright version and Debian release
 COPY package.json package-lock.json ./
-RUN npm ci --ignore-scripts && npx playwright install chromium
+RUN npm ci --ignore-scripts && npx playwright install --with-deps --only-shell chromium
 
 # Copy source and build
 COPY . .
